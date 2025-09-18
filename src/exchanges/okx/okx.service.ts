@@ -1,19 +1,73 @@
 import WebSocket from "ws";
+import { RestClient } from 'okx-api';
+const {} = process.env;
+
 
 interface SubscribeMsg {
   op: string;
   args: { channel: string; instId: string }[];
 }
 
-export class OKXWebSocket {
+export class OKXService {
   private socket!: WebSocket;
   private readonly url = "wss://wspap.okx.com:8443/ws/v5/public?brokerId=9999";
   private readonly symbols = ["BTC-USDT", "ETH-USDT", "SOL-USDT"];
+  private client:RestClient
 
   constructor() {
     this.init();
+    this.client = new RestClient({
+      apiKey:'',
+      apiSecret:'',
+      apiPass:''
+    })
   }
 
+
+  async marketBuy(instId:string, quantity:string){  //instId = 'BTC-USDT'
+    try {
+      const response = await this.client.submitOrder({
+        instId:instId,
+        tdMode:'cash',        //cash is for spot trade
+        clOrdId:'b12',        //order id, we can also define it to track on our own
+        side:'buy',     
+        ordType:'market',
+        sz:quantity           // quantity to buy or sell    
+      })
+      return response; 
+    } catch (error) {
+      console.error("OKX Market Buy Error:", error);
+      throw error;
+    }
+  }
+
+
+    async marketSell(instId:string, quantity:string){  
+    try {
+      const response = await this.client.submitOrder({
+        instId:instId,
+        tdMode:'cash',  
+        clOrdId:'b12',  
+        side:'sell',     
+        ordType:'market',
+        sz:quantity               
+      })
+      return response; 
+    } catch (error) {
+      console.error("OKX Market Sell Error:", error);
+      throw error;
+    }
+  }
+
+
+
+  /** ============ WEBSOCKET METHODS ============ **/
+
+
+  public connectTicker(): void {
+    this.init();
+  }
+  
   private init(): void {
     this.socket = new WebSocket(this.url);
 

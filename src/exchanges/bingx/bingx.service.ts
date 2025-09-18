@@ -1,5 +1,8 @@
 import WebSocket from "ws";
 import zlib from "zlib";
+import CryptoJS from "crypto-js";
+import axios from "axios"
+
 
 interface ChannelPayload {
   id: string;
@@ -11,6 +14,9 @@ export class BingXWebSocket {
   private socket!: WebSocket;
   private readonly path = "wss://open-api-swap.bingx.com/swap-market";
   private receivedMessage = "";
+  // private apiKey:string;
+  // private apiSecret:string;
+
 
   private readonly channel: ChannelPayload = {
     id: "24dd0e35-56a4-4f7a-af8a-394c7060909c",
@@ -20,6 +26,16 @@ export class BingXWebSocket {
 
   constructor() {
     this.init();
+  }
+
+
+  async marketBuy(){
+
+  }
+
+
+  async marketSell(){
+
   }
 
   private init(): void {

@@ -13,9 +13,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/crypto-js": "^4.2.2",
     "@types/express": "^5.0.3",
     "@types/mongoose": "^5.11.97",
     "@types/node": "^24.3.1",
+    "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^8.43.0",
     "@typescript-eslint/parser": "^8.43.0",
     "eslint": "^9.35.0",
@@ -26,9 +28,13 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
+    "bybit-api": "^4.3.1",
+    "crypto-js": "^4.2.0",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "mexc-api-sdk": "^1.0.3",
     "mongoose": "^8.18.1",
+    "okx-api": "^3.0.6",
     "ws": "^8.18.3"
   }
 }
