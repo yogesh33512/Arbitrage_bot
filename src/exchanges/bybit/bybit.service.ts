@@ -1,5 +1,7 @@
 import { RestClientV5 } from "bybit-api";
 import WebSocket from "ws";
+import dotenv from "dotenv";
+dotenv.config();
 
 const { BYBIT_WS_URL, BYBIT_API_KEY_TESTNET, BYBIT_API_SECRET_TESTNET } =
   process.env;
@@ -12,8 +14,8 @@ export class BYbitService {
   private ws: WebSocket | null = null;
 
   constructor() {
-    this.apiKey = BYBIT_API_KEY_TESTNET!;
-    this.secret = BYBIT_API_SECRET_TESTNET!;
+    this.apiKey = process.env.BYBIT_API_KEY as string;
+    this.secret = process.env.BYBIT_SECRET as string;
     this.client = new RestClientV5({
       testnet: true,
       key: this.apiKey,

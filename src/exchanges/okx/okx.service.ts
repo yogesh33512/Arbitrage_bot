@@ -1,7 +1,7 @@
 import WebSocket from "ws";
 import { RestClient } from 'okx-api';
-const {} = process.env;
-
+import dotenv from "dotenv";
+dotenv.config();
 
 interface SubscribeMsg {
   op: string;
@@ -17,8 +17,8 @@ export class OKXService {
   constructor() {
     this.init();
     this.client = new RestClient({
-      apiKey:'',
-      apiSecret:'',
+      apiKey:process.env.OKX_API_KEY,
+      apiSecret:process.env.OKX_SECRET,
       apiPass:''
     })
   }
