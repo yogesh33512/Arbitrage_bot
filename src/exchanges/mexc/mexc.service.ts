@@ -1,50 +1,50 @@
 import WebSocket from "ws";
-import {Spot} from 'mexc-api-sdk';
+import { Spot } from 'mexc-api-sdk';
 
 
 export class MEXCServices {
   private socket!: WebSocket;
   private readonly url = "wss://wbs.mexc.com/ws"; // Spot Market WS
   private readonly symbols = ["BTCUSDT", "ETHUSDT", "SOLUSDT"];
-  private client:Spot;
-  private apiKey:string;
-  private apiSecret:string
+  private client: Spot;
+  private apiKey: string;
+  private apiSecret: string
 
 
   constructor() {
     this.init();
-    this.apiKey=process.env.MEXC_API_KEY!,
-    this.apiSecret=process.env.MEXC_API_SECRET!,
-    this.client = new Spot(
-      this.apiKey,
-      this.apiSecret
-    )
+    this.apiKey = process.env.MEXC_API_KEY!,
+      this.apiSecret = process.env.MEXC_API_SECRET!,
+      this.client = new Spot(
+        this.apiKey,
+        this.apiSecret
+      )
   }
 
 
-  async marketBuy(symbol:string, quantity:string){
+  async marketBuy(symbol: string, quantity: string) {
     try {
       const response = await this.client.newOrder(
-          symbol,
-          'BUY',
-          'MARKET',
-          quantity
-        )
+        symbol,
+        'BUY',
+        'MARKET',
+        quantitya
+      ) 
       return response;
     } catch (error) {
       console.error("MEXC Market Buy Error:", error);
       throw error;
     }
-    
+
   }
 
-  async marketSell(symbol:string, quantity:string){
+  async marketSell(symbol: string, quantity: string) {
     try {
       const response = await this.client.newOrder(
-          symbol,
-          'SELL',
-          'MARKET',
-          quantity )
+        symbol,
+        'SELL',
+        'MARKET',
+        quantity)
     } catch (error) {
       console.error("MEXC Market Sell Error:", error);
       throw error;
@@ -52,7 +52,7 @@ export class MEXCServices {
   }
 
 
-    /** ============ WEBSOCKET METHODS ============ **/
+  /** ============ WEBSOCKET METHODS ============ **/
 
 
   public connectTicker(): void {
@@ -89,7 +89,7 @@ export class MEXCServices {
       if (msg?.d && msg?.s) {
         // d = trades array, s = symbol
         const trades = msg.d;
-        if (trades.length > 0) {
+        if (trades.length > 0) {    
           const lastTrade = trades[trades.length - 1];
           console.log(`📈 ${msg.s} last price: ${lastTrade.p}`);
         }

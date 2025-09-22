@@ -1,18 +1,10 @@
-import { Schema, model, Document } from 'mongoose';
-
-export interface IArbitrageOpportunity extends Document {
-    type: string;
-    exchanges: string[];
-    tokenPath: string[];
-    profitPercent: number;
-    slippage: number;
-    createdAt: Date;
-}
+import { Schema, model } from 'mongoose';
+import { IArbitrageOpportunity } from './arbitrage.types';
 
 const ArbitrageSchema = new Schema<IArbitrageOpportunity>({
     type: { type: String, required: true }, // direct or triangular
     exchanges: [{ type: String, required: true }],
-    tokenPath: [{ type: String, required: true }],
+    tokenPath: [{ type: String, required: true }],  
     profitPercent: { type: Number, required: true },
     slippage: { type: Number, required: true },
     createdAt: { type: Date, default: Date.now }

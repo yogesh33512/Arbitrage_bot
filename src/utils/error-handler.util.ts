@@ -3,7 +3,7 @@ import { LoggerService } from '../core/logger.service';
 
 const logger = new LoggerService();
 
-export class ErrorHandler {
+export class ErrorHandler {     
     static handleError(err: any, req: Request, res: Response, next: NextFunction) {
         const statusCode = err.statusCode || 500;
         const message = err.message || 'Internal Server Error';
