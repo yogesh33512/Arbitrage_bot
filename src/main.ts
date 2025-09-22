@@ -14,7 +14,7 @@ const app = express();
 const logger = new LoggerService();
 
 // Connect to database
- new DatabaseService();
+new DatabaseService();
 
 app.use(express.json());
 // Basic health check endpoint
@@ -30,9 +30,7 @@ ErrorHandler.handleUnhandledRejections();
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  
-
-    /*
+  /*
   //Binance
   const binanceService = new BinanceService();
 
@@ -46,8 +44,6 @@ app.listen(PORT, () => {
     console.log(`Binance market sell response`, response)
   }).catch(err => console.log(`Binance market sell error: `, err));
   */
-
-
 
   /*
   //mexc
@@ -77,14 +73,47 @@ app.listen(PORT, () => {
   })
 */
 
+  //Bybit
+  const bybitService = new BYbitService();
 
+  
   /*
-    //Bybit
-    const bybitService = new BYbitService();
-    bybitService.marketBuy('BTC-USDT','0.00000000000001').then(response => {
-       console.log(`Bybit market buy response: `, response)
-    }).catch(err=>console.log(`Bybit marketbuy error: `, err.rsponse?.data || err.message));
-    */
+  bybitService.checkBalance()
+    .then((response) => {
+      console.log(response.result.list[0].coin);})
+    .catch((error) => {
+      console.error(error);
+    });
+
+  */
+
+
+
+
+  bybitService
+    .marketBuy("SOLUSDT", "50").then((response) => {
+      console.log(`Bybit market buy response: `, response);
+    }).catch((err) =>
+      console.log(`Bybit marketbuy error: `, err.rsponse?.data || err.message)
+    );
+    
+
+
+/*
+bybitService.marketSell('SOLUSDT',"1").then(response=>{
+  console.log(`Bybit market sell response: `, response)
+}).catch(err =>{
+  console.log(`Bybit marketsell error: `, err.rsponse?.data || err.message)
+})
+
+
+ 
+/*
+  bybitService.orderStatus().then((response)=>{
+    console.log(response.result);
+  })
+  */
+
 
   /*
     //OKXServices

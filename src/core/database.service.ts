@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { LoggerService } from './logger.service';
+import { seedConfig } from '../config/config.service';
 
 export class DatabaseService {
     private logger = new LoggerService();
@@ -13,6 +14,9 @@ export class DatabaseService {
         try {
             await mongoose.connect(mongoUri);
             this.logger.log('Connected to MongoDB');
+
+            //create seed config
+            await seedConfig();
         } catch (error) {
             this.logger.error('MongoDB connection error:', error);
             process.exit(1);

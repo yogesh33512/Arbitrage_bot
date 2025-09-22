@@ -6,7 +6,6 @@ dotenv.config();
 const { BYBIT_WS_URL, BYBIT_API_KEY_TESTNET, BYBIT_API_SECRET_TESTNET } =
   process.env;
 
-
 export class BYbitService {
   private apiKey: string;
   private secret: string;
@@ -20,42 +19,61 @@ export class BYbitService {
       testnet: true,
       key: this.apiKey,
       secret: this.secret,
+      recv_window: 10000,
     });
   }
 
   async marketBuy(symbol: string, quantity: string) {
     try {
-    const response = await this.client.submitOrder({
-      category: "spot",
-      symbol,
-      side: "Buy",
-      orderType: "Market",
-      qty:quantity,
-    });
-    return response; 
-  } catch (error) {
-    console.error("Market Buy Error:", error);
-    throw error;
+      const response = await this.client.submitOrder({
+        category: "spot",
+        symbol,
+        side: "Buy",
+        orderType: "Market",
+        qty: quantity,
+      });
+      return response;
+    } catch (error) {
+      console.error("Market Buy Error:", error);
+      throw error;
     }
   }
 
   async marketSell(symbol: string, quantity: string) {
     try {
-        const response = await this.client.submitOrder({
-      category: "spot",
-      symbol: symbol,
-      side: 'Sell',
-      orderType: "Market",
-      qty: quantity,
-    })
-    return response;        
+      const response = await this.client.submitOrder({
+        category: "spot",
+        symbol: symbol,
+        side: "Sell",
+        orderType: "Market",
+        qty: quantity,
+      });
+      return response;
     } catch (error) {
-    console.error("Market Buy Error:", error);
-    throw error;    
+      console.error("Market Buy Error:", error);
+      throw error;
     }
-
   }
 
+  async checkBalance() {
+    try {
+      const response = await this.client.getWalletBalance({
+        coin: "SOL",
+        accountType: "UNIFIED",
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async orderStatus() {
+    const response = await this.client.getHistoricOrders({
+      category: "spot",
+      symbol: "SOLUSDT",
+    });
+    return response;
+  }
   connectTicker() {
     this.ws = new WebSocket(BYBIT_WS_URL!);
 
