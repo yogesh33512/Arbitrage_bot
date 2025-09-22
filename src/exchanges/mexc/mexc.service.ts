@@ -18,20 +18,8 @@ export class MEXCServices {
       (this.client = new Spot(this.apiKey, this.apiSecret));
   }
 
-  async marketBuy(symbol: string, quantity?: string, quoteOrderQty?: string) {
 
-  constructor() {
-    this.init();
-    this.apiKey = process.env.MEXC_API_KEY!,
-      this.apiSecret = process.env.MEXC_API_SECRET!,
-      this.client = new Spot(
-        this.apiKey,
-        this.apiSecret
-      )
-  }
-
-
-  async marketBuy(symbol: string, quantity: string) {
+  async marketBuy(symbol: string, quantity?: string, quoteOrderQty?:string) {
     try {
       const options: any = {};
 
@@ -55,11 +43,9 @@ export class MEXCServices {
     }
   }
 
+
+
   async marketSell(symbol: string, quantity?: string, quoteOrderQty?:string) {
-
-  }
-
-  async marketSell(symbol: string, quantity: string) {
     try {
       const options:any = {}
 

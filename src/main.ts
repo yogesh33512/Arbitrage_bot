@@ -45,17 +45,20 @@ app.listen(PORT, () => {
   }).catch(err => console.log(`Binance market sell error: `, err));
   */
 
+
+
   /*
   //mexc
   const mexcService = new MEXCServices();
 
-  
   mexcService.checkBalance().then((response)=>{
     console.log('MEXC check balance response: ',response.balances)
   }).catch((err)=>{
     console.log('MEXC check balance error: ',err)
   })
+    
 
+  
   mexcService
     .marketBuy("SOLUSDT", "", "1")
     .then((response) => {
@@ -71,10 +74,11 @@ app.listen(PORT, () => {
   }).catch((err)=>{
     console.log('MEXC market sell error: ',JSON.parse(err.body.toString()))
   })
-*/
+  */
+
 
   //Bybit
-  const bybitService = new BYbitService();
+  //const bybitService = new BYbitService();
 
   
   /*
@@ -90,12 +94,12 @@ app.listen(PORT, () => {
 
 
 
-  bybitService
-    .marketBuy("SOLUSDT", "50").then((response) => {
-      console.log(`Bybit market buy response: `, response);
-    }).catch((err) =>
-      console.log(`Bybit marketbuy error: `, err.rsponse?.data || err.message)
-    );
+  // bybitService
+  //   .marketBuy("SOLUSDT", "50").then((response) => {
+  //     console.log(`Bybit market buy response: `, response);
+  //   }).catch((err) =>
+  //     console.log(`Bybit marketbuy error: `, err.rsponse?.data || err.message)
+  //   );
     
 
 
