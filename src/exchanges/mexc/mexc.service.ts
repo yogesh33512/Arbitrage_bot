@@ -1,6 +1,7 @@
 import WebSocket from "ws";
-import { Spot } from 'mexc-api-sdk';
-
+import { Spot } from "mexc-api-sdk";
+import dotenv from "dotenv";
+dotenv.config();
 
 export class MEXCServices {
   private socket!: WebSocket;
@@ -8,8 +9,16 @@ export class MEXCServices {
   private readonly symbols = ["BTCUSDT", "ETHUSDT", "SOLUSDT"];
   private client: Spot;
   private apiKey: string;
-  private apiSecret: string
+  private apiSecret: string;
 
+  constructor() {
+    //this.init();
+    (this.apiKey = process.env.MEXC_API_KEY as string),
+      (this.apiSecret = process.env.MEXC_SECRET as string),
+      (this.client = new Spot(this.apiKey, this.apiSecret));
+  }
+
+  async marketBuy(symbol: string, quantity?: string, quoteOrderQty?: string) {
 
   constructor() {
     this.init();
@@ -24,36 +33,67 @@ export class MEXCServices {
 
   async marketBuy(symbol: string, quantity: string) {
     try {
+      const options: any = {};
+
+      if (quantity) {
+        options.quantity = quantity;
+      } else if (quoteOrderQty) {
+        options.quoteOrderQty = quoteOrderQty; 
+      } else {
+        throw new Error("You must provide either quantity or quoteOrderQty");
+      }
       const response = await this.client.newOrder(
         symbol,
-        'BUY',
-        'MARKET',
-        quantitya
-      ) 
+        "BUY",
+        "MARKET",
+        options
+      );
+
       return response;
     } catch (error) {
-      console.error("MEXC Market Buy Error:", error);
       throw error;
     }
+  }
+
+  async marketSell(symbol: string, quantity?: string, quoteOrderQty?:string) {
 
   }
 
   async marketSell(symbol: string, quantity: string) {
     try {
+      const options:any = {}
+
+      if(quantity){
+        options.quantity = quantity;
+      }else if(quoteOrderQty){
+        options.quoteOrderQty = quoteOrderQty;
+      }else{
+        throw new Error("You must provide either quantity or quoteOrderQty")
+      }
+
       const response = await this.client.newOrder(
         symbol,
-        'SELL',
-        'MARKET',
-        quantity)
+        "SELL",
+        "MARKET",
+        options
+      );
+      return response;
     } catch (error) {
-      console.error("MEXC Market Sell Error:", error);
       throw error;
     }
   }
 
+  async checkBalance() {
+    try {
+      const response = await this.client.accountInfo();
+      return response;
+    } catch (error) {
+      console.error("MEXC Balance Error:", error);
+      throw error;
+    }
+  }
 
   /** ============ WEBSOCKET METHODS ============ **/
-
 
   public connectTicker(): void {
     this.init();
