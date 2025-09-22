@@ -19,6 +19,19 @@ export class MEXCServices {
   }
 
   async marketBuy(symbol: string, quantity?: string, quoteOrderQty?: string) {
+
+  constructor() {
+    this.init();
+    this.apiKey = process.env.MEXC_API_KEY!,
+      this.apiSecret = process.env.MEXC_API_SECRET!,
+      this.client = new Spot(
+        this.apiKey,
+        this.apiSecret
+      )
+  }
+
+
+  async marketBuy(symbol: string, quantity: string) {
     try {
       const options: any = {};
 
@@ -35,6 +48,7 @@ export class MEXCServices {
         "MARKET",
         options
       );
+
       return response;
     } catch (error) {
       throw error;
@@ -42,6 +56,10 @@ export class MEXCServices {
   }
 
   async marketSell(symbol: string, quantity?: string, quoteOrderQty?:string) {
+
+  }
+
+  async marketSell(symbol: string, quantity: string) {
     try {
       const options:any = {}
 
@@ -111,7 +129,7 @@ export class MEXCServices {
       if (msg?.d && msg?.s) {
         // d = trades array, s = symbol
         const trades = msg.d;
-        if (trades.length > 0) {
+        if (trades.length > 0) {    
           const lastTrade = trades[trades.length - 1];
           console.log(`📈 ${msg.s} last price: ${lastTrade.p}`);
         }
