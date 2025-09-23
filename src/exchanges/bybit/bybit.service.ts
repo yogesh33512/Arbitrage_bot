@@ -2,6 +2,7 @@ import { RestClientV5 } from "bybit-api";
 import WebSocket from "ws";
 import dotenv from "dotenv";
 dotenv.config();
+import { exchangeQuoteSymbol } from "./bybit.types";
 
 const { BYBIT_WS_URL, BYBIT_API_KEY_TESTNET, BYBIT_API_SECRET_TESTNET } =
   process.env;
@@ -31,6 +32,7 @@ export class BYbitService {
         side: "Buy",
         orderType: "Market",
         qty: quantity,
+        // marketUnit:'quoteCoin'
       });
       return response;
     } catch (error) {
@@ -58,7 +60,7 @@ export class BYbitService {
   async checkBalance() {
     try {
       const response = await this.client.getWalletBalance({
-        coin: "SOL",
+        coin: "BTC",
         accountType: "UNIFIED",
       });
       return response;
@@ -74,6 +76,15 @@ export class BYbitService {
     });
     return response;
   }
+
+
+  async exchangeQuote(symbol:exchangeQuoteSymbol){
+    const response = await this.client.getTickers({category:'spot',symbol})
+    return response
+  }
+
+
+
   connectTicker() {
     this.ws = new WebSocket(BYBIT_WS_URL!);
 

@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 import crypto from "crypto";
 import WebSocket from "ws";
+import { exchangeQuoteSymbol } from "./binance.types";
 
 const { BINANCE_API_KEY, BINANCE_API_SECRET, BINANCE_BASE_URL, BINANCE_WS_URL } = process.env;
 
@@ -59,6 +60,24 @@ export class BinanceService {
       quantity: quantity.toString(),
     });
   }
+
+
+  async exchangeQuote(symbol:exchangeQuoteSymbol){
+    console.log('BINANCE URL -> ',BINANCE_BASE_URL);
+    try {
+      const url = `${BINANCE_BASE_URL}/api/v3/ticker/price`;
+      const response = await axios.get(url,{
+        params:{
+          symbol:symbol
+        }
+      })
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+
   
   /** ============ WEBSOCKET METHODS ============ **/
   connectTicker(symbols: string[] = ["btcusdt", "ethusdt"]) {

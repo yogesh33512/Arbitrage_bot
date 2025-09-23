@@ -1,5 +1,6 @@
 import WebSocket from "ws";
 import { Spot } from "mexc-api-sdk";
+import { exchangeQuoteSymbol } from "./mexc.types";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -77,6 +78,12 @@ export class MEXCServices {
       console.error("MEXC Balance Error:", error);
       throw error;
     }
+  }
+
+
+  async exchangeQuote(symbol:exchangeQuoteSymbol){
+    const tickers = await this.client.tickerPrice(symbol);
+    return tickers;
   }
 
   /** ============ WEBSOCKET METHODS ============ **/
