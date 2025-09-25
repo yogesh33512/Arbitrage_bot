@@ -15,3 +15,6 @@ export interface APIRequest {
   payload: TradePayload | Record<string, any>;
   protocol: "https" | "http";
 }
+
+
+export type exchangeQuoteSymbol = "SOL-USDT" | "ETH-USDT" | "BTC-USDT";
