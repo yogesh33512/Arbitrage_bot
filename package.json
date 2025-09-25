@@ -35,6 +35,7 @@
     "mexc-api-sdk": "^1.0.3",
     "mongoose": "^8.18.1",
     "okx-api": "^3.0.6",
+    "typescript-telegram-bot-api": "^0.10.0",
     "ws": "^8.18.3"
   }
 }

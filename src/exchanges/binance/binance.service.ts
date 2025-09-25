@@ -3,13 +3,20 @@ import crypto from "crypto";
 import WebSocket from "ws";
 import { exchangeQuoteSymbol } from "./binance.types";
 
-const { BINANCE_API_KEY, BINANCE_API_SECRET, BINANCE_BASE_URL, BINANCE_WS_URL } = process.env;
+const {
+  BINANCE_API_KEY,
+  BINANCE_API_SECRET,
+  BINANCE_BASE_URL,
+  BINANCE_WS_URL,
+} = process.env;
 
-export class BinanceService {
+class BinanceService {
   private apiKey: string;
   private secret: string;
   private http: AxiosInstance;
   private ws: WebSocket | null = null;
+  private userWs: WebSocket | null = null;
+  private listenKey: string | null = null;
 
   constructor() {
     this.apiKey = BINANCE_API_KEY!;
@@ -61,24 +68,20 @@ export class BinanceService {
     });
   }
 
-
-  async exchangeQuote(symbol:exchangeQuoteSymbol){
-    console.log('BINANCE URL -> ',BINANCE_BASE_URL);
+  async exchangeQuote(symbol: exchangeQuoteSymbol) {
     try {
       const url = `${BINANCE_BASE_URL}/api/v3/ticker/price`;
-      const response = await axios.get(url,{
-        params:{
-          symbol:symbol
-        }
-      })
+      const response = await axios.get(url, {
+        params: {
+          symbol: symbol,
+        },
+      });
       return response.data;
     } catch (error) {
       throw error;
     }
   }
 
-
-  
   /** ============ WEBSOCKET METHODS ============ **/
   connectTicker(symbols: string[] = ["btcusdt", "ethusdt"]) {
     const streams = symbols.map((s) => `${s}@ticker`).join("/");
@@ -107,4 +110,69 @@ export class BinanceService {
   disconnect() {
     this.ws?.close();
   }
-};
+
+  async userDataStream() {
+    const res = await axios.post(
+      "https://testnet.binance.vision/api/v3/userDataStream",
+      null,
+      { headers: { "X-MBX-APIKEY": this.apiKey } }
+    );
+
+    const listenKey = res.data.listenKey;
+    // this.userWs = new WebSocket(
+    //   `wss://testnet.binance.vision/ws/${this.listenKey}`
+    // );
+
+    const ws = new WebSocket(`wss://testnet.binance.vision/ws/${listenKey}`);
+
+
+    console.log("new websocket is created-------------------->")
+    ws.on("open", () => {
+      console.log("Connected to Binance User Data WS");
+    });
+
+    ws.on("message", (raw) => {
+      const msg = JSON.parse(raw.toString());
+      console.log("🔔 Raw WS Event:", msg);
+
+      if (msg.e === "executionReport") {
+        console.log("Order Update:", {
+          symbol: msg.s,
+          side: msg.S,
+          status: msg.X, // NEW, FILLED, PARTIALLY_FILLED, etc.
+          lastPrice: msg.L,
+          filledQty: msg.z,
+          lastQty: msg.l,
+          fee: msg.n,
+        });
+      }
+
+      if (msg.e === "outboundAccountPosition") {
+        console.log("Account Balance Update:", msg.B);
+      }
+    });
+
+    ws.on("error", (err) => {
+      console.error("Binance User Data WS Error:", err);
+    });
+
+    ws.on("close", () => {
+      console.log("🔌 Binance User Data WS Closed");
+    });
+
+    // Step 3: Keep-alive ping every ~30 min
+    setInterval(async () => {
+      if (this.listenKey) {
+        await this.http.put(
+          `/api/v3/userDataStream?listenKey=${this.listenKey}`
+        );
+      }
+    }, 1000 * 60 * 30);
+  }
+
+  disconnectUserStream() {
+    this.userWs?.close();
+  }
+}
+
+export const binanceService = new BinanceService();

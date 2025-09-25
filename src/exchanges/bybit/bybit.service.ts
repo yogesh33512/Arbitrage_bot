@@ -7,7 +7,7 @@ import { exchangeQuoteSymbol } from "./bybit.types";
 const { BYBIT_WS_URL, BYBIT_API_KEY_TESTNET, BYBIT_API_SECRET_TESTNET } =
   process.env;
 
-export class BYbitService {
+class BYbitService {
   private apiKey: string;
   private secret: string;
   private client: RestClientV5;
@@ -133,3 +133,6 @@ export class BYbitService {
     this.ws?.close();
   }
 }
+
+
+export const bybitService = new BYbitService();
