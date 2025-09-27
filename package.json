@@ -28,6 +28,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
+    "@binance/spot": "^18.0.0",
     "bybit-api": "^4.3.1",
     "crypto-js": "^4.2.0",
     "dotenv": "^17.2.2",

@@ -24,3 +24,12 @@ export const seedConfig = async () => {
     console.error("Error occured while seeding config: ", error);
   }
 };
+
+
+export const updateConfigField = async (field:keyof typeof Config.schema.obj,value:number) =>{
+  try {
+    await Config.findOneAndUpdate({},{[field]:value},{ new: true, upsert: true })
+  } catch (error) {
+    throw error;
+  }
+}

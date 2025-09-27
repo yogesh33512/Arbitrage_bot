@@ -4,6 +4,8 @@ import {
   InlineKeyboardMarkup,
   Message,
 } from "typescript-telegram-bot-api";
+import { updateConfigField } from "../config/config.service";
+
 export class ConfigService {
   private bot: TelegramBot;
 
@@ -15,77 +17,78 @@ export class ConfigService {
     const keyboard: InlineKeyboardMarkup = {
       inline_keyboard: [
         [
-          { text: "Binance", callback_data: "cex_binance" },
-          { text: "Bybit", callback_data: "cex_bybit" },
-          { text: "BingX", callback_data: "cex_bingx" },
-          { text: "Mexc", callback_data: "cex_mexc" },
-          { text: "Okx", callback_data: "cex_okx" },
+          { text: "Binance", callback_data: "cex_Binance" },
+          { text: "Bybit", callback_data: "cex_Bybit" },
+          { text: "BingX", callback_data: "cex_BingX" },
+          { text: "Mexc", callback_data: "cex_Mexc" },
+          { text: "Okx", callback_data: "cex_Okx" },
         ],
       ],
     };
-
-    await this.bot.sendMessage({
-      chat_id: chatId,
-      text: "Select your CEX:",
-      reply_markup: keyboard,
-    });
+    try {
+      await this.bot.sendMessage({
+        chat_id: chatId,
+        text: "Select your CEX:",
+        reply_markup: keyboard,
+      });
+    } catch (error) {
+      console.error("Error occured during start config: ", error);
+    }
   }
 
   async handleCexSelection(query: any) {
     const cex = query.data.replace("cex_", "");
     await this.bot.sendMessage({
       chat_id: query.from.id,
-      text: `You selected: ${cex}`,
+      text: `You selected: ${cex}. Please enter the amount.`,
     });
-
-    const currencyButtons: InlineKeyboardButton[][] = [
-      [{ text: "ETH", callback_data: `currency_ETH_${cex}` }],
-      [{ text: "SOL", callback_data: `currency_SOL_${cex}` }],
-      [{ text: "BTC", callback_data: `currency_BTC_${cex}` }],
-    ];
 
     await this.bot.answerCallbackQuery({
       callback_query_id: query.id,
-    });
-
-    await this.bot.sendMessage({
-      chat_id: query.from.id,
-      text: `You selected: ${cex}. Now pick a currency:`,
-      reply_markup: {
-        inline_keyboard: currencyButtons,
-      },
     });
   }
 
   async handleCurrencySelection(query: any) {
-    const [_, currency, cex] = query.data.split("_");
-
+    let cex = query.data.replace("cex_", "");
     await this.bot.sendMessage({
       chat_id: query.from.id,
-      text: `You selected ${currency} on ${cex}. Now enter the amount:`,
+      text: `You selected: ${cex}. Please enter the amount.`,
     });
+
+    cex = `capital${cex}`
 
     await this.bot.answerCallbackQuery({
       callback_query_id: query.id,
     });
 
-    const amountListener = (msg: Message) => {
-      if (!isNaN(Number(msg.text))) {
-        const amount = Number(msg.text);
+    const amountListener = async (msg: Message) => {
+      const amount = Number(msg.text);
+      if (isNaN(amount) || amount <= 0) {
         this.bot.sendMessage({
           chat_id: msg.chat.id,
-          text: `Config saved:\nCEX: ${cex}\nCurrency: ${currency}\nAmount: ${amount}`,
+          text: "Please enter a valid amount.",
+        });
+        return;
+      }
+
+      if (!isNaN(Number(msg.text))) {
+        const amount = Number(msg.text);
+        
+        try {
+          await updateConfigField(cex,amount)
+        } catch (error) {
+          console.log('Erorr occured while updating config capital')
+        }
+
+        this.bot.sendMessage({
+          chat_id: msg.chat.id,
+          text: `Config updated with ${cex} amount $${msg.text}`,
         });
 
         this.bot.removeListener("message", amountListener);
-      } else {
-         this.bot.sendMessage({
-          chat_id: msg.chat.id,
-          text: "Please enter a valid number.",
-        });
       }
     };
-
     this.bot.on("message", amountListener);
   }
+
 }

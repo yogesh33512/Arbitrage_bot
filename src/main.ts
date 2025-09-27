@@ -7,10 +7,12 @@ import { ErrorHandler } from "./utils/error-handler.util";
 import { binanceService } from "./exchanges";
 import { bybitService } from "./exchanges/bybit/bybit.service";
 import { OKXService } from "./exchanges/okx/okx.service";
-import { MEXCServices } from "./exchanges/mexc/mexc.service";
-import { BingXServices } from "./exchanges/bingx/bingx.service";
+import { mexcService } from "./exchanges/mexc/mexc.service";
+import { bingxService } from "./exchanges/bingx/bingx.service";
 import { TelegramBot } from "typescript-telegram-bot-api";
 import { TelegramController } from "./telegram/telegram.controller";
+import { exchangeQuoteSymbol } from "./exchanges/binance/binance.types";
+import { bingXQuoteSymbol } from "./exchanges/bingx/bingx.types";
 
 const app = express();
 const logger = new LoggerService();
@@ -31,8 +33,9 @@ ErrorHandler.handleUncaughtExceptions();
 ErrorHandler.handleUnhandledRejections();
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  
+app.listen(PORT, () => {  
+
+  /*
   //Binance
   // const binanceService = new BinanceService();
 
@@ -44,7 +47,6 @@ app.listen(PORT, () => {
   }).catch(err=>console.log(`Binance marketbuy error: `, err.response?.data || err.message))
   
 
-/*
   binanceService.marketSell('SOLUSDT',0.08).then(response=>{
     console.log(`Binance market sell response`, response)
   }).catch(err => console.log(`Binance market sell error: `, err));
@@ -80,7 +82,7 @@ app.listen(PORT, () => {
   */
 
   //Bybit
-  //const bybitService = new BYbitService();
+  // const bybitService = new BYbitService();
 
   /*
   bybitService.checkBalance()
@@ -92,12 +94,14 @@ app.listen(PORT, () => {
 
   */
 
-  // bybitService
-  //   .marketBuy("SOLUSDT", "50").then((response) => {
-  //     console.log(`Bybit market buy response: `, response);
-  //   }).catch((err) =>
-  //     console.log(`Bybit marketbuy error: `, err.rsponse?.data || err.message)
-  //   );
+  /*
+  bybitService
+    .marketBuy("SOLUSDT", "1").then((response) => {
+      console.log(`Bybit market buy response: `, response);
+    }).catch((err) =>
+      console.log(`Bybit marketbuy error: `, err.rsponse?.data || err.message)
+    );
+    */
 
   /*
 bybitService.marketSell('SOLUSDT',"1").then(response=>{
@@ -115,7 +119,6 @@ bybitService.marketSell('SOLUSDT',"1").then(response=>{
   */
 
   //OKXServices
-
 
   /*
   const okxService = new OKXService();
@@ -157,12 +160,14 @@ bybitService.marketSell('SOLUSDT',"1").then(response=>{
     }).catch(err=>console.log(`BingX marketsell error: `, err.rsponse?.data || err.message));
     */
 
+  
   //Telegram Initialization
-  const bot = new TelegramBot({botToken: "8386977037:AAE9hnOfqG2r1Zf7ix9h7e-1w2WHp-NXqJQ",});
+  const bot = new TelegramBot({botToken: "8386977037:AAE9hnOfqG2r1Zf7ix9h7e-1w2WHp-NXqJQ",},);
   bot.startPolling();
   new TelegramController(bot);
 
   console.log("🤖 Telegram bot is running...");
+  
 
   logger.log(`Server is running on port ${PORT}`);
 });

@@ -17,4 +17,4 @@ export interface APIRequest {
 }
 
 
-export type exchangeQuoteSymbol = "SOL-USDT" | "ETH-USDT" | "BTC-USDT";
+export type bingXQuoteSymbol = "SOL-USDT" | "ETH-USDT" | "BTC-USDT";

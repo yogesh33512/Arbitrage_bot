@@ -6,7 +6,7 @@ import { ConfigService } from "./config.service";
 
 export class TelegramController {
   private service: TelegramService;
-  private configService:ConfigService;
+  private configService: ConfigService;
 
   constructor(private bot: TelegramBot) {
     this.service = new TelegramService();
@@ -21,16 +21,20 @@ export class TelegramController {
       console.log(chatId, messageText);
 
       if (messageText === "/start") {
-        this.bot.sendMessage({
-          chat_id: chatId,
-          text: "Welcome to Arbitrarge bot.",
-        });
+        try {
+          this.bot.sendMessage({
+            chat_id: chatId,
+            text: "Welcome to Arbitrarge bot.",
+          });
+        } catch (error) {
+          console.error("Error occured while sending message in /start", error);
+        }
       }
 
       if (messageText === "/binance-quote") {
         const quote = await this.service.fetchBinancePrices();
         try {
-            console.log(quote);
+          console.log(quote);
           await this.bot.sendMessage({
             chat_id: chatId,
             text: quote,
@@ -40,11 +44,10 @@ export class TelegramController {
         }
       }
 
-
-       if (messageText === "/bybit-quote") {
-        const quote = await this.service.fetchBybitPrices()
+      if (messageText === "/bybit-quote") {
+        const quote = await this.service.fetchBybitPrices();
         try {
-            console.log(quote);
+          console.log(quote);
           await this.bot.sendMessage({
             chat_id: chatId,
             text: quote,
@@ -54,20 +57,17 @@ export class TelegramController {
         }
       }
 
-      if(messageText === "/config"){
+      if (messageText === "/config") {
         this.configService.startConfig(chatId);
       }
     });
 
-    this.bot.on('callback_query',(query)=>{
-        const data = query.data;
-        if(!data) return;
-        if(data.startsWith("cex_")){
-            this.configService.handleCexSelection(query)
-        }else if(data.startsWith("currency_")){
-            this.configService.handleCurrencySelection(query)
-        }
-        
-    })
+    this.bot.on("callback_query", (query) => {
+      const data = query.data;
+      if (!data) return;
+      if (data.startsWith("cex_")) {
+        this.configService.handleCurrencySelection(query);
+      }
+    });
   }
 }

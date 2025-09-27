@@ -2,7 +2,7 @@ import WebSocket from "ws";
 import zlib from "zlib";
 import CryptoJS from "crypto-js";
 import axios, {AxiosRequestConfig} from "axios"
-import { APIRequest, exchangeQuoteSymbol } from "./bingx.types";
+import { APIRequest, bingXQuoteSymbol } from "./bingx.types";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -14,7 +14,7 @@ interface ChannelPayload {
   dataType: string;
 }
 
-export class BingXServices {  
+class BingXServices {  
   private socket!: WebSocket;
   private readonly path = "wss://open-api-swap.bingx.com/swap-market";
   private receivedMessage = "";
@@ -143,7 +143,7 @@ export class BingXServices {
   }
 
 
-  async exchangeQuote(symbol:exchangeQuoteSymbol){
+  async exchangeQuote(symbol:bingXQuoteSymbol){
     const url = `https://open-api.bingx.com/openApi/spot/v1/ticker/price`;
     const response = await axios.get(url,{
       params:{symbol}
@@ -205,4 +205,4 @@ export class BingXServices {
 }
 
 // Run the client
-// const bingxClient = new BingXWebSocket();
+export  const bingxService = new BingXServices();

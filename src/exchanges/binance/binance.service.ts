@@ -2,6 +2,12 @@ import axios, { AxiosInstance } from "axios";
 import crypto from "crypto";
 import WebSocket from "ws";
 import { exchangeQuoteSymbol } from "./binance.types";
+import {
+  Spot,
+  SpotRestAPI,
+  SPOT_REST_API_TESTNET_URL,
+  SPOT_WS_STREAMS_TESTNET_URL,
+} from "@binance/spot";
 
 const {
   BINANCE_API_KEY,
@@ -15,8 +21,7 @@ class BinanceService {
   private secret: string;
   private http: AxiosInstance;
   private ws: WebSocket | null = null;
-  private userWs: WebSocket | null = null;
-  private listenKey: string | null = null;
+  private client: Spot;
 
   constructor() {
     this.apiKey = BINANCE_API_KEY!;
@@ -26,6 +31,26 @@ class BinanceService {
       headers: { "X-MBX-APIKEY": this.apiKey },
       timeout: 10000,
     });
+    this.ws = new WebSocket("wss://ws-api.testnet.binance.vision/ws-api/v3", {
+      headers: {
+        "X-MBX-APIKEY": this.apiKey,
+      },
+    });
+
+    this.client = new Spot({
+      configurationRestAPI: {
+        apiKey: "vg22knWAzNsS4NbOobpvsImhAlkFIb1a7uvSiUnELXNFTjx9rm9484hCgvHzcXsv",
+        privateKey: "./binance-spot-ed25519.pem",
+        basePath: SPOT_REST_API_TESTNET_URL,
+      },
+    });
+
+    console.log(
+      BINANCE_API_KEY,
+      BINANCE_API_SECRET,
+      BINANCE_BASE_URL,
+      BINANCE_WS_URL
+    );
   }
 
   /** ============ REST ORDER METHODS ============ **/
@@ -51,12 +76,25 @@ class BinanceService {
   }
 
   async marketBuy(symbol: string, quantity: number) {
-    return this.placeOrder({
+    /* return this.placeOrder({
       symbol,
       side: "BUY",
       type: "MARKET",
       quantity: quantity.toString(),
-    });
+    });*/
+    try {
+      const response = this.client.restAPI.newOrder({
+        symbol: symbol,
+        side: SpotRestAPI.NewOrderSideEnum.BUY,
+        type: SpotRestAPI.NewOrderTypeEnum.MARKET,
+        timeInForce: SpotRestAPI.NewOrderTimeInForceEnum.GTC,
+        quantity:quantity,
+      });
+      const data = (await response).data();
+      return data;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async marketSell(symbol: string, quantity: number) {
@@ -111,68 +149,7 @@ class BinanceService {
     this.ws?.close();
   }
 
-  async userDataStream() {
-    const res = await axios.post(
-      "https://testnet.binance.vision/api/v3/userDataStream",
-      null,
-      { headers: { "X-MBX-APIKEY": this.apiKey } }
-    );
-
-    const listenKey = res.data.listenKey;
-    // this.userWs = new WebSocket(
-    //   `wss://testnet.binance.vision/ws/${this.listenKey}`
-    // );
-
-    const ws = new WebSocket(`wss://testnet.binance.vision/ws/${listenKey}`);
-
-
-    console.log("new websocket is created-------------------->")
-    ws.on("open", () => {
-      console.log("Connected to Binance User Data WS");
-    });
-
-    ws.on("message", (raw) => {
-      const msg = JSON.parse(raw.toString());
-      console.log("🔔 Raw WS Event:", msg);
-
-      if (msg.e === "executionReport") {
-        console.log("Order Update:", {
-          symbol: msg.s,
-          side: msg.S,
-          status: msg.X, // NEW, FILLED, PARTIALLY_FILLED, etc.
-          lastPrice: msg.L,
-          filledQty: msg.z,
-          lastQty: msg.l,
-          fee: msg.n,
-        });
-      }
-
-      if (msg.e === "outboundAccountPosition") {
-        console.log("Account Balance Update:", msg.B);
-      }
-    });
-
-    ws.on("error", (err) => {
-      console.error("Binance User Data WS Error:", err);
-    });
-
-    ws.on("close", () => {
-      console.log("🔌 Binance User Data WS Closed");
-    });
-
-    // Step 3: Keep-alive ping every ~30 min
-    setInterval(async () => {
-      if (this.listenKey) {
-        await this.http.put(
-          `/api/v3/userDataStream?listenKey=${this.listenKey}`
-        );
-      }
-    }, 1000 * 60 * 30);
-  }
-
-  disconnectUserStream() {
-    this.userWs?.close();
-  }
+  async userDataStream() {}
 }
 
 export const binanceService = new BinanceService();
