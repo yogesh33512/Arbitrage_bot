@@ -13,6 +13,10 @@ import { TelegramBot } from "typescript-telegram-bot-api";
 import { TelegramController } from "./telegram/telegram.controller";
 import { exchangeQuoteSymbol } from "./exchanges/binance/binance.types";
 import { bingXQuoteSymbol } from "./exchanges/bingx/bingx.types";
+import { arbitration } from "./arbitrage/arbitrage.service";
+import { ExchangeAdapter } from "./arbitrage/arbitrage.types";
+import { BinanceAdapter } from "./adapters/binanceAdapter";
+import { BingXAdapter } from "./adapters/bingXAdapter";
 
 const app = express();
 const logger = new LoggerService();
@@ -33,7 +37,53 @@ ErrorHandler.handleUncaughtExceptions();
 ErrorHandler.handleUnhandledRejections();
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {  
+app.listen(PORT, () => {
+  const symbol = "SOLUSDT";
+  const size = 0.5;
+
+  const exchanges: ExchangeAdapter[] = [
+    new BingXAdapter(),
+    new BinanceAdapter(),
+
+    // add more exchange adapters here
+  ];
+
+  console.log("[Main] Starting arbitrage scanner");
+  console.log(`[Main] Trading Symbol: ${symbol}, Trade Size: ${size}`);
+  console.log(`[Main] Exchanges: ${exchanges.map((ex) => ex.name).join(", ")}`);
+
+  setInterval(async () => {
+    console.log("\n[Main] ----- Starting new scan -----");
+
+    try {
+      const opportunities = await arbitration.ArbitrationScanner(
+        exchanges,
+        symbol,
+        size,
+        0.5
+      );
+
+      console.log(
+        `[Main] Scan complete. Opportunities found: ${opportunities.length}`
+      );
+
+      if (opportunities.length === 0) {
+        console.log("[Main] No arbitrage opportunities at this time.");
+      }
+
+      for (const arb of opportunities) {
+        console.log(
+          `[Main] Executing opportunity: Buy ${arb.size} ${arb.symbol} on ${arb.buyExchange.name}, Sell on ${arb.sellExchange.name}`
+        );
+        await arbitration.arbitrargeExecution(arb);
+        console.log("[Main] Opportunity execution completed\n");
+      }
+    } catch (err) {
+      console.error("[Main] Error during scan/execution:", err);
+    }
+
+    console.log("[Main] ----- Scan cycle complete -----");
+  }, 2000);
 
   /*
   //Binance
@@ -160,14 +210,14 @@ bybitService.marketSell('SOLUSDT',"1").then(response=>{
     }).catch(err=>console.log(`BingX marketsell error: `, err.rsponse?.data || err.message));
     */
 
-  
   //Telegram Initialization
-  const bot = new TelegramBot({botToken: "8386977037:AAE9hnOfqG2r1Zf7ix9h7e-1w2WHp-NXqJQ",},);
+  const bot = new TelegramBot({
+    botToken: "8386977037:AAE9hnOfqG2r1Zf7ix9h7e-1w2WHp-NXqJQ",
+  });
   bot.startPolling();
   new TelegramController(bot);
 
   console.log("🤖 Telegram bot is running...");
-  
 
   logger.log(`Server is running on port ${PORT}`);
 });

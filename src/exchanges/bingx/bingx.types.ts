@@ -1,3 +1,10 @@
+
+export interface ChannelPayload {
+  id: string;
+  reqType: string;
+  dataType: string;
+}
+
 export interface TradePayload {
   type: string;
   symbol: string;

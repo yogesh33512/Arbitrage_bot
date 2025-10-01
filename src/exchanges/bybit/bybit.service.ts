@@ -3,6 +3,7 @@ import WebSocket from "ws";
 import dotenv from "dotenv";
 dotenv.config();
 import { exchangeQuoteSymbol } from "./bybit.types";
+import axios from "axios";
 
 const { BYBIT_WS_URL, BYBIT_API_KEY_TESTNET, BYBIT_API_SECRET_TESTNET } =
   process.env;
@@ -77,33 +78,52 @@ class BYbitService {
     return response;
   }
 
-
-  async exchangeQuote(symbol:exchangeQuoteSymbol){
-    const response = await this.client.getTickers({category:'spot',symbol})
-    return response
+  async exchangeQuote(symbol: exchangeQuoteSymbol) {
+    const response = await this.client.getTickers({ category: "spot", symbol });
+    return response;
   }
 
+  async getOrderBook(symbol: string = "ETHUSDT", depth = 5) {
+    try {
+      const response = await this.client.getOrderbook({
+        category:'spot',
+        symbol,
+        limit:depth
+      })
 
+      const orderbook = {
+        bids:response.result.b.map(([price,qty])=>[Number(price), Number(qty)]),
+        asks:response.result.a.map(([price,qty])=>[Number(price), Number(qty)]),
+      }
+
+      return orderbook;
+    } catch (error) {
+      console.error("Error fetching order book:", error);
+    }
+  }
 
   connectTicker() {
     this.ws = new WebSocket(BYBIT_WS_URL!);
 
     this.ws.on("open", () => {
       console.log(`✅ Connected to bybit Testnet:}`);
+      console.log(BYBIT_WS_URL);
 
       this.ws?.send(
         JSON.stringify({
           op: "subscribe",
           args: ["tickers.ETHUSDT", "tickers.BTCUSDT", "tickers.SOLUSDT"],
-          req_id: "price_sub",
+          // args: [ "orderbook.50.BTCUSDT","orderbook.50.ETHUSDT","orderbook.50.SOLUSDT"],
+          req_id: "orderbook_sub",
         })
       );
     });
 
     this.ws.on("message", (data) => {
       const msg = JSON.parse(data.toString());
-
-      // console.log(msg)
+      console.log(msg);
+      // console.log("msg b------------------>",msg?.data?.b);
+      // console.log("msg a------------------>",msg?.data?.b);
       if (msg.topic?.startsWith("tickers")) {
         const symbol = msg.data.symbol; // e.g., ETHUSDT
         const price = parseFloat(msg.data.lastPrice); // last price
@@ -133,6 +153,5 @@ class BYbitService {
     this.ws?.close();
   }
 }
-
 
 export const bybitService = new BYbitService();

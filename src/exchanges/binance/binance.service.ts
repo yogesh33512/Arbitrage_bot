@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 import crypto from "crypto";
 import WebSocket from "ws";
-import { exchangeQuoteSymbol } from "./binance.types";
+import { exchangeQuoteSymbol, Orderbook } from "./binance.types";
 import {
   Spot,
   SpotRestAPI,
@@ -22,6 +22,7 @@ class BinanceService {
   private http: AxiosInstance;
   private ws: WebSocket | null = null;
   private client: Spot;
+  private orderbooks: Record<string, Orderbook> = {};
 
   constructor() {
     this.apiKey = BINANCE_API_KEY!;
@@ -39,18 +40,13 @@ class BinanceService {
 
     this.client = new Spot({
       configurationRestAPI: {
-        apiKey: "vg22knWAzNsS4NbOobpvsImhAlkFIb1a7uvSiUnELXNFTjx9rm9484hCgvHzcXsv",
+        apiKey:
+          "vg22knWAzNsS4NbOobpvsImhAlkFIb1a7uvSiUnELXNFTjx9rm9484hCgvHzcXsv",
         privateKey: "./binance-spot-ed25519.pem",
         basePath: SPOT_REST_API_TESTNET_URL,
       },
     });
 
-    console.log(
-      BINANCE_API_KEY,
-      BINANCE_API_SECRET,
-      BINANCE_BASE_URL,
-      BINANCE_WS_URL
-    );
   }
 
   /** ============ REST ORDER METHODS ============ **/
@@ -88,7 +84,7 @@ class BinanceService {
         side: SpotRestAPI.NewOrderSideEnum.BUY,
         type: SpotRestAPI.NewOrderTypeEnum.MARKET,
         timeInForce: SpotRestAPI.NewOrderTimeInForceEnum.GTC,
-        quantity:quantity,
+        quantity: quantity,
       });
       const data = (await response).data();
       return data;
@@ -120,8 +116,31 @@ class BinanceService {
     }
   }
 
+  async getOrderBook(symbol: string, limit = 5) {
+    try {
+      const url = `${BINANCE_BASE_URL}/api/v3/depth?symbol=${symbol}&limit=${limit}`;
+      const res = await axios.get(url);
+
+      const orderbook: Orderbook = {
+        bids: res.data.bids.map(([price, qty]: [string, string]) => [
+          Number(price),
+          Number(qty),
+        ]),
+        asks: res.data.asks.map(([price, qty]: [string, string]) => [
+          Number(price),
+          Number(qty),
+        ]),
+      };
+      this.orderbooks[symbol.toLowerCase()] = orderbook;
+      return orderbook;
+    } catch (err) {
+      console.error("Error fetching orderbook:", err);
+      return { bids: [], asks: [] };
+    }
+  }
+
   /** ============ WEBSOCKET METHODS ============ **/
-  connectTicker(symbols: string[] = ["btcusdt", "ethusdt"]) {
+  connectTicker(symbols: string[] = ["btcusdt", "ethusdt", "solusdt"]) {
     const streams = symbols.map((s) => `${s}@ticker`).join("/");
     this.ws = new WebSocket(`${BINANCE_WS_URL}/${streams}`);
 
@@ -134,6 +153,7 @@ class BinanceService {
       const stream = msg.stream; // e.g., btcusdt@ticker
       const price = msg.data.c; // last price
       console.log(`📊 ${stream}: ${price}`);
+      console.log("msg----->", msg);
     });
 
     this.ws.on("error", (err) => {

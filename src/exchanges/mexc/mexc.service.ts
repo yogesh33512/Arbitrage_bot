@@ -8,7 +8,7 @@ import axios from "axios";
 
 class MEXCServices {
   private socket!: WebSocket;
-  private readonly url = "wss://wbs.mexc.com/ws"; // Spot Market WS
+  private readonly url = " wss://wbs-api.mexc.com/ws"; // Spot Market WS
   private readonly symbols = ["BTCUSDT", "ETHUSDT", "SOLUSDT"];
   private client: Spot;
   private apiKey: string;
@@ -168,7 +168,9 @@ class MEXCServices {
     this.symbols.forEach((sym) => {
       const subscribeMsg = {
         method: "SUBSCRIPTION",
-        params: [`spot@public.deals.v3.api@${sym}`],
+        //params: [`spot@public.deals.v3.api@${sym}`],
+        params:[`spot@public.bookTicker.v3.api@${sym}`],
+        id:1
       };
       this.socket.send(JSON.stringify(subscribeMsg));
       console.log(`📡 Subscribed to ${sym}`);
@@ -178,7 +180,7 @@ class MEXCServices {
   private onMessage(message: any): void {
     try {
       const msg = JSON.parse(message.toString());
-
+      console.log('msg mexc--------------->',msg);
       if (msg?.d && msg?.s) {
         // d = trades array, s = symbol
         const trades = msg.d;
