@@ -2,12 +2,13 @@ import { RestClientV5 } from "bybit-api";
 import WebSocket from "ws";
 import dotenv from "dotenv";
 dotenv.config();
+import { exchangeQuoteSymbol } from "./bybit.types";
+import axios from "axios";
 
 const { BYBIT_WS_URL, BYBIT_API_KEY_TESTNET, BYBIT_API_SECRET_TESTNET } =
   process.env;
 
-
-export class BYbitService {
+class BYbitService {
   private apiKey: string;
   private secret: string;
   private client: RestClientV5;
@@ -20,40 +21,85 @@ export class BYbitService {
       testnet: true,
       key: this.apiKey,
       secret: this.secret,
+      recv_window: 10000,
     });
   }
 
   async marketBuy(symbol: string, quantity: string) {
     try {
-    const response = await this.client.submitOrder({
-      category: "spot",
-      symbol,
-      side: "Buy",
-      orderType: "Market",
-      qty:quantity,
-    });
-    return response; 
-  } catch (error) {
-    console.error("Market Buy Error:", error);
-    throw error;
+      const response = await this.client.submitOrder({
+        category: "spot",
+        symbol,
+        side: "Buy",
+        orderType: "Market",
+        qty: quantity,
+        // marketUnit:'quoteCoin'
+      });
+      return response;
+    } catch (error) {
+      console.error("Market Buy Error:", error);
+      throw error;
     }
   }
 
   async marketSell(symbol: string, quantity: string) {
     try {
-        const response = await this.client.submitOrder({
-      category: "spot",
-      symbol: symbol,
-      side: 'Sell',
-      orderType: "Market",
-      qty: quantity,
-    })
-    return response;        
+      const response = await this.client.submitOrder({
+        category: "spot",
+        symbol: symbol,
+        side: "Sell",
+        orderType: "Market",
+        qty: quantity,
+      });
+      return response;
     } catch (error) {
-    console.error("Market Buy Error:", error);
-    throw error;    
+      console.error("Market Buy Error:", error);
+      throw error;
     }
+  }
 
+  async checkBalance() {
+    try {
+      const response = await this.client.getWalletBalance({
+        coin: "BTC",
+        accountType: "UNIFIED",
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async orderStatus() {
+    const response = await this.client.getHistoricOrders({
+      category: "spot",
+      symbol: "SOLUSDT",
+    });
+    return response;
+  }
+
+  async exchangeQuote(symbol: exchangeQuoteSymbol) {
+    const response = await this.client.getTickers({ category: "spot", symbol });
+    return response;
+  }
+
+  async getOrderBook(symbol: string = "ETHUSDT", depth = 5) {
+    try {
+      const response = await this.client.getOrderbook({
+        category:'spot',
+        symbol,
+        limit:depth
+      })
+
+      const orderbook = {
+        bids:response.result.b.map(([price,qty])=>[Number(price), Number(qty)]),
+        asks:response.result.a.map(([price,qty])=>[Number(price), Number(qty)]),
+      }
+
+      return orderbook;
+    } catch (error) {
+      console.error("Error fetching order book:", error);
+    }
   }
 
   connectTicker() {
@@ -61,20 +107,23 @@ export class BYbitService {
 
     this.ws.on("open", () => {
       console.log(`✅ Connected to bybit Testnet:}`);
+      console.log(BYBIT_WS_URL);
 
       this.ws?.send(
         JSON.stringify({
           op: "subscribe",
           args: ["tickers.ETHUSDT", "tickers.BTCUSDT", "tickers.SOLUSDT"],
-          req_id: "price_sub",
+          // args: [ "orderbook.50.BTCUSDT","orderbook.50.ETHUSDT","orderbook.50.SOLUSDT"],
+          req_id: "orderbook_sub",
         })
       );
     });
 
     this.ws.on("message", (data) => {
       const msg = JSON.parse(data.toString());
-
-      // console.log(msg)
+      console.log(msg);
+      // console.log("msg b------------------>",msg?.data?.b);
+      // console.log("msg a------------------>",msg?.data?.b);
       if (msg.topic?.startsWith("tickers")) {
         const symbol = msg.data.symbol; // e.g., ETHUSDT
         const price = parseFloat(msg.data.lastPrice); // last price
@@ -104,3 +153,5 @@ export class BYbitService {
     this.ws?.close();
   }
 }
+
+export const bybitService = new BYbitService();

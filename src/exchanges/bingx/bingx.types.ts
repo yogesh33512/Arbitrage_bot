@@ -1,3 +1,10 @@
+
+export interface ChannelPayload {
+  id: string;
+  reqType: string;
+  dataType: string;
+}
+
 export interface TradePayload {
   type: string;
   symbol: string;
@@ -15,3 +22,6 @@ export interface APIRequest {
   payload: TradePayload | Record<string, any>;
   protocol: "https" | "http";
 }
+
+
+export type bingXQuoteSymbol = "SOL-USDT" | "ETH-USDT" | "BTC-USDT";

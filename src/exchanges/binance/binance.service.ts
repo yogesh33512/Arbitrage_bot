@@ -1,14 +1,28 @@
 import axios, { AxiosInstance } from "axios";
 import crypto from "crypto";
 import WebSocket from "ws";
+import { exchangeQuoteSymbol, Orderbook } from "./binance.types";
+import {
+  Spot,
+  SpotRestAPI,
+  SPOT_REST_API_TESTNET_URL,
+  SPOT_WS_STREAMS_TESTNET_URL,
+} from "@binance/spot";
 
-const { BINANCE_API_KEY, BINANCE_API_SECRET, BINANCE_BASE_URL, BINANCE_WS_URL } = process.env;
+const {
+  BINANCE_API_KEY,
+  BINANCE_API_SECRET,
+  BINANCE_BASE_URL,
+  BINANCE_WS_URL,
+} = process.env;
 
-export class BinanceService {
+class BinanceService {
   private apiKey: string;
   private secret: string;
   private http: AxiosInstance;
   private ws: WebSocket | null = null;
+  private client: Spot;
+  private orderbooks: Record<string, Orderbook> = {};
 
   constructor() {
     this.apiKey = BINANCE_API_KEY!;
@@ -18,6 +32,21 @@ export class BinanceService {
       headers: { "X-MBX-APIKEY": this.apiKey },
       timeout: 10000,
     });
+    this.ws = new WebSocket("wss://ws-api.testnet.binance.vision/ws-api/v3", {
+      headers: {
+        "X-MBX-APIKEY": this.apiKey,
+      },
+    });
+
+    this.client = new Spot({
+      configurationRestAPI: {
+        apiKey:
+          "vg22knWAzNsS4NbOobpvsImhAlkFIb1a7uvSiUnELXNFTjx9rm9484hCgvHzcXsv",
+        privateKey: "./binance-spot-ed25519.pem",
+        basePath: SPOT_REST_API_TESTNET_URL,
+      },
+    });
+
   }
 
   /** ============ REST ORDER METHODS ============ **/
@@ -43,12 +72,25 @@ export class BinanceService {
   }
 
   async marketBuy(symbol: string, quantity: number) {
-    return this.placeOrder({
+    /* return this.placeOrder({
       symbol,
       side: "BUY",
       type: "MARKET",
       quantity: quantity.toString(),
-    });
+    });*/
+    try {
+      const response = this.client.restAPI.newOrder({
+        symbol: symbol,
+        side: SpotRestAPI.NewOrderSideEnum.BUY,
+        type: SpotRestAPI.NewOrderTypeEnum.MARKET,
+        timeInForce: SpotRestAPI.NewOrderTimeInForceEnum.GTC,
+        quantity: quantity,
+      });
+      const data = (await response).data();
+      return data;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async marketSell(symbol: string, quantity: number) {
@@ -59,9 +101,46 @@ export class BinanceService {
       quantity: quantity.toString(),
     });
   }
-  
+
+  async exchangeQuote(symbol: exchangeQuoteSymbol) {
+    try {
+      const url = `${BINANCE_BASE_URL}/api/v3/ticker/price`;
+      const response = await axios.get(url, {
+        params: {
+          symbol: symbol,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getOrderBook(symbol: string, limit = 5) {
+    try {
+      const url = `${BINANCE_BASE_URL}/api/v3/depth?symbol=${symbol}&limit=${limit}`;
+      const res = await axios.get(url);
+
+      const orderbook: Orderbook = {
+        bids: res.data.bids.map(([price, qty]: [string, string]) => [
+          Number(price),
+          Number(qty),
+        ]),
+        asks: res.data.asks.map(([price, qty]: [string, string]) => [
+          Number(price),
+          Number(qty),
+        ]),
+      };
+      this.orderbooks[symbol.toLowerCase()] = orderbook;
+      return orderbook;
+    } catch (err) {
+      console.error("Error fetching orderbook:", err);
+      return { bids: [], asks: [] };
+    }
+  }
+
   /** ============ WEBSOCKET METHODS ============ **/
-  connectTicker(symbols: string[] = ["btcusdt", "ethusdt"]) {
+  connectTicker(symbols: string[] = ["btcusdt", "ethusdt", "solusdt"]) {
     const streams = symbols.map((s) => `${s}@ticker`).join("/");
     this.ws = new WebSocket(`${BINANCE_WS_URL}/${streams}`);
 
@@ -74,6 +153,7 @@ export class BinanceService {
       const stream = msg.stream; // e.g., btcusdt@ticker
       const price = msg.data.c; // last price
       console.log(`📊 ${stream}: ${price}`);
+      console.log("msg----->", msg);
     });
 
     this.ws.on("error", (err) => {
@@ -88,4 +168,8 @@ export class BinanceService {
   disconnect() {
     this.ws?.close();
   }
-};
+
+  async userDataStream() {}
+}
+
+export const binanceService = new BinanceService();
