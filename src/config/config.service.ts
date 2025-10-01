@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const seedConfig = async () => {
-  try {
     const count = await Config.countDocuments();
     if (count === 0) {
       await Config.create({
@@ -20,16 +19,9 @@ export const seedConfig = async () => {
     } else {
       console.log("Config already existed, skipping seed config.");
     }
-  } catch (error) {
-    console.error("Error occured while seeding config: ", error);
-  }
 };
 
 
 export const updateConfigField = async (field:keyof typeof Config.schema.obj,value:number) =>{
-  try {
     await Config.findOneAndUpdate({},{[field]:value},{ new: true, upsert: true })
-  } catch (error) {
-    throw error;
-  }
 }

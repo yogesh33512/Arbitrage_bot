@@ -6,7 +6,6 @@ import {
   Spot,
   SpotRestAPI,
   SPOT_REST_API_TESTNET_URL,
-  SPOT_WS_STREAMS_TESTNET_URL,
 } from "@binance/spot";
 
 const {

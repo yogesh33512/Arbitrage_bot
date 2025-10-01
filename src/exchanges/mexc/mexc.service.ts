@@ -1,8 +1,6 @@
 import WebSocket from "ws";
 import { Spot } from "mexc-api-sdk";
 import { exchangeQuoteSymbol } from "./mexc.types";
-import dotenv from "dotenv";
-dotenv.config();
 import crypto from "crypto";
 import axios from "axios";
 

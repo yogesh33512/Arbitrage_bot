@@ -1,9 +1,6 @@
 import { RestClientV5 } from "bybit-api";
 import WebSocket from "ws";
-import dotenv from "dotenv";
-dotenv.config();
 import { exchangeQuoteSymbol } from "./bybit.types";
-import axios from "axios";
 
 const { BYBIT_WS_URL, BYBIT_API_KEY_TESTNET, BYBIT_API_SECRET_TESTNET } =
   process.env;

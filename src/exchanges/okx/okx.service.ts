@@ -1,7 +1,5 @@
 import WebSocket from "ws";
 import { RestClient } from "okx-api";
-import dotenv from "dotenv";
-dotenv.config();
 import axios from "axios";
 import CryptoJS from "crypto-js";
 

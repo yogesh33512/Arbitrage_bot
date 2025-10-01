@@ -3,8 +3,6 @@ import zlib from "zlib";
 import CryptoJS from "crypto-js";
 import axios, { AxiosRequestConfig } from "axios";
 import { APIRequest, bingXQuoteSymbol } from "./bingx.types";
-import dotenv from "dotenv";
-dotenv.config();
 import { ChannelPayload } from "./bingx.types";
 
 class BingXServices {
