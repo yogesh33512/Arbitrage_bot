@@ -131,6 +131,7 @@ class BinanceService {
         ]),
       };
       this.orderbooks[symbol.toLowerCase()] = orderbook;
+      console.log(`orderbook------------->${symbol}`,orderbook);
       return orderbook;
     } catch (err) {
       console.error("Error fetching orderbook:", err);

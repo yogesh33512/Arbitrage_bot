@@ -6,3 +6,10 @@ export interface ExchangeOrderbook {
 }
 
 
+export type Orderbook = {
+  bids: [number, number][]; // price , quantity
+  asks: [number, number][];
+};
+
+export type GetOrderbookFn = (symbol:string) => Promise<Orderbook>;
+

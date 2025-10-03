@@ -13,10 +13,11 @@ import { TelegramBot } from "typescript-telegram-bot-api";
 import { TelegramController } from "./telegram/telegram.controller";
 import { exchangeQuoteSymbol } from "./exchanges/binance/binance.types";
 import { bingXQuoteSymbol } from "./exchanges/bingx/bingx.types";
-import { arbitration } from "./arbitrage/arbitrage.service";
-import { ExchangeAdapter } from "./arbitrage/arbitrage.types";
+import { arbitration } from "./arbitrarge/arbitrarge.service";
+import { ExchangeAdapter } from "./arbitrarge/arbitrage.types";
 import { BinanceAdapter } from "./adapters/binanceAdapter";
 import { BingXAdapter } from "./adapters/bingXAdapter";
+import { TriangularArbitrage } from "./arbitrarge/triangularArbitrarge";
 
 const app = express();
 const logger = new LoggerService();
@@ -38,6 +39,25 @@ ErrorHandler.handleUnhandledRejections();
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
+
+
+const triangularArbitrarge = new TriangularArbitrage();
+triangularArbitrarge.findOpportunity(new BinanceAdapter())
+
+
+
+
+
+
+
+
+
+
+
+
+  // Below is arbitrarge for a symbol across different exchanges
+
+  /*
   const symbol = "SOLUSDT";
   const size = 0.5;
 
@@ -84,6 +104,8 @@ app.listen(PORT, () => {
 
     console.log("[Main] ----- Scan cycle complete -----");
   }, 2000);
+
+  */
 
   /*
   //Binance
