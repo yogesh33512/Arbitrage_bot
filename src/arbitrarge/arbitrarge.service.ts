@@ -16,12 +16,13 @@ class Arbitration {
     console.log(`Checking buy on ${buyEx.name} and sell on ${sellEx.name}`);
 
     const buyBook = await buyEx.getOrderbook(symbol);
+    buyBook.asks.sort((a, b) => a[0] - b[0]);
     console.log(`[evaluateArbitrarge] Buy orderbook fetched. Top 3 asks:`, buyBook.asks.slice(0, 3));
-    console.log(buyBook);
+    console.log("buybook---------->",buyBook);
 
     const sellBook = await sellEx.getOrderbook(symbol);
     console.log(`[evaluateArbitrarge] Sell orderbook fetched. Top 3 bids:`, sellBook.bids.slice(0, 3));
-    console.log(sellBook);
+    console.log("sellbook------------>",sellBook);
 
     const buyEst = await orderBooks.avgPriceFromBook(buyBook.asks, size);
     console.log(`[evaluateArbitrarge] Estimated buy price:`, buyEst);

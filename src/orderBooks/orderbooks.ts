@@ -58,7 +58,7 @@ class Orderbooks {
     const roi = netProfit / costWithFee;
 
     console.log(
-      `[calculateProfit] ✅ NetProfit: ${netProfit}, ROI: ${(roi * 100).toFixed(
+      `[calculateProfit] ✅ NetProfit: ${netProfit}, ROI: ${(roi * 100).toFixed(+
         2
       )}%, CostWithFee: ${costWithFee}, ProceedsAfterFee: ${proceedsAfterFee}`
     );

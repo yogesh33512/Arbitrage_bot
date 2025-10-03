@@ -1,0 +1,8 @@
+const paths = [
+  ["SOLUSDT", "SOLBTC", "BTCUSDT"],
+  ["SOLUSDT", "SOLETH", "ETHUSDT"],
+  ["BTCUSDT", "BTCSOL", "SOLUSDT"],
+  ["BTCUSDT", "BTCETH", "ETHUSDT"],
+  ["ETHUSDT", "ETHSOL", "SOLUSDT"],
+  ["ETHUSDT", "ETHBTC", "BTCUSDT"],
+];
