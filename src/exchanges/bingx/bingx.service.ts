@@ -171,18 +171,23 @@ class BingXServices {
       },
       protocol: "https",
     };
-    const response = await this.sendRequest(api);
-    const orderbook = {
-      bids: response.data.bids.map(([price, qty]: [string, string]) => [
-        Number(price),
-        Number(qty),
-      ]),
-      asks: response.data.asks.map(([price, qty]: [string, string]) => [
-        Number(price),
-        Number(qty),
-      ]),
-    };
-    return orderbook;
+    try {
+      const response = await this.sendRequest(api);
+      const orderbook = {
+        bids: response.data.bids.map(([price, qty]: [string, string]) => [
+          Number(price),
+          Number(qty),
+        ]),
+        asks: response.data.asks.map(([price, qty]: [string, string]) => [
+          Number(price),
+          Number(qty),
+        ]),
+      };
+      return orderbook;
+    } catch (error) {
+      console.log(`Error while fetching bingx: `, error);
+      return { bids: [], asks: [] };
+    }
   }
 
   async formatSymbol(symbol: string) {

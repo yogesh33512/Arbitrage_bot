@@ -18,6 +18,7 @@ import { ExchangeAdapter } from "./arbitrarge/arbitrage.types";
 import { BinanceAdapter } from "./adapters/binanceAdapter";
 import { BingXAdapter } from "./adapters/bingXAdapter";
 import { TriangularArbitrage } from "./arbitrarge/triangularArbitrarge";
+import { MexcAdapter } from "./adapters/mexcAdapter";
 
 const app = express();
 const logger = new LoggerService();
@@ -40,24 +41,25 @@ ErrorHandler.handleUnhandledRejections();
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
 
+  //Triangular arbitrarge
 
-const triangularArbitrarge = new TriangularArbitrage();
-triangularArbitrarge.findOpportunity(new BinanceAdapter())
-
-
-
-
-
-
-
-
-
-
-
+  /*
+  async function triangular() {
+    const triangularArbitrarge = new TriangularArbitrage();
+    //triangularArbitrarge.findOpportunity(new BingXAdapter(), new BinanceAdapter() , new MexcAdapter());
+    await triangularArbitrarge.findOpportunity()
+  }
+  triangular();
+*/
+  // mexcService.getOrderBooks('SOLUSDT');
 
   // Below is arbitrarge for a symbol across different exchanges
 
-  /*
+
+
+
+  
+  
   const symbol = "SOLUSDT";
   const size = 0.5;
 
@@ -105,7 +107,11 @@ triangularArbitrarge.findOpportunity(new BinanceAdapter())
     console.log("[Main] ----- Scan cycle complete -----");
   }, 2000);
 
-  */
+  
+
+
+
+
 
   /*
   //Binance

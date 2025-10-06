@@ -80,22 +80,33 @@ class BYbitService {
     return response;
   }
 
-  async getOrderBook(symbol: string = "ETHUSDT", depth = 5) {
+  async getOrderBook(
+    symbol: string,
+    depth = 5
+  ): Promise<{ bids: [number, number][]; asks: [number, number][] }> {
     try {
+
       const response = await this.client.getOrderbook({
-        category:'spot',
+        category: "spot",
         symbol,
-        limit:depth
-      })
+        limit: depth,
+      });
 
-      const orderbook = {
-        bids:response.result.b.map(([price,qty])=>[Number(price), Number(qty)]),
-        asks:response.result.a.map(([price,qty])=>[Number(price), Number(qty)]),
-      }
+      const bids = response.result.b.map(
+        ([price, qty]: [string, string]) =>
+          [Number(price), Number(qty)] as [number, number]
+      );
 
-      return orderbook;
+
+      const asks = response.result.a.map(
+        ([price, qty]: [string, string]) =>
+          [Number(price), Number(qty)] as [number, number]
+      );
+
+      return { bids, asks };
     } catch (error) {
       console.error("Error fetching order book:", error);
+      return { bids: [], asks: [] };
     }
   }
 

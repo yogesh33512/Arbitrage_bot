@@ -2,6 +2,7 @@ import WebSocket from "ws";
 import { RestClient } from "okx-api";
 import axios from "axios";
 import CryptoJS from "crypto-js";
+import { inspect } from "util";
 
 interface SubscribeMsg {
   op: string;
@@ -19,7 +20,7 @@ export class OKXService {
   private passphrase: string;
 
   constructor() {
-    this.init();
+    //this.init();
     this.BASE_URL_OKX = process.env.BASE_URL_OKX as string;
     this.apiKey = process.env.OKX_API_KEY as string;
     this.secretKey = process.env.OKX_SECRET as string;
@@ -120,9 +121,22 @@ export class OKXService {
     }
   }
 
-  async getBalance(){
-    const response = await axios.get(`${this.BASE_URL_OKX}/api/v5/account/balance`);
+  async getBalance() {
+    const response = await axios.get(
+      `${this.BASE_URL_OKX}/api/v5/account/balance`
+    );
     return response;
+  }
+
+  async getOrderBooks(symbol: string) {
+    try {
+      const response = await this.client.getOrderBook({
+        instId: symbol,
+      });
+      console.log(response);
+    } catch (error) {
+      console.log(`Error while fetching OKX orderbooks: `, error);
+    }
   }
 
   /** ============ WEBSOCKET METHODS ============ **/
