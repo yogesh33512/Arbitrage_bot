@@ -21,7 +21,7 @@ export class BybitAdapter extends ExchangeAdapter {
 
   async getFees(symbol: string) {
     // return bybit trading fees
-    return { taker: 0.001, maker: 0.0005 };
+    return { taker: 0.001, maker: 0.001 };
   }
 
   async getBalance(asset: string): Promise<number> {

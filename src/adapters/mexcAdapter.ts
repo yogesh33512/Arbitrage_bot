@@ -22,7 +22,7 @@ export class MexcAdapter extends ExchangeAdapter {
 
   async getFees(symbol: string) {
     // return Mexc trading fees
-    return { taker: 0.001, maker: 0.0005 };
+    return { taker: 0.005, maker: 0.00 };
   }
 
   async getBalance(asset: string): Promise<number> {

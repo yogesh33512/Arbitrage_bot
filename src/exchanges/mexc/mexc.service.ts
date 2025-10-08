@@ -44,10 +44,9 @@ class MEXCServices {
         "MARKET",
         options
       );
-
       return response;
     } catch (error) {
-      throw error;
+      console.log(`Error occured while mexc market buy: `, error)
     }
   }
 
@@ -75,7 +74,7 @@ class MEXCServices {
       );
       return response;
     } catch (error) {
-      throw error;
+      console.log(`Error occured while mexc market sell: `, error);
     }
   }
 
@@ -106,6 +105,8 @@ class MEXCServices {
         ),
       };
       this.orderbooks[symbol.toLowerCase()] = orderbook;
+      //console.log('mexc bids------>', orderbook.bids.slice(0,5));
+      //console.log('mexc asks------>', orderbook.asks.slice(0,5));
       return orderbook;
     } catch (error) {
       console.log(`Error occured while fetching mexc order books: `, error);

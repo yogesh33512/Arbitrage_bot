@@ -6,7 +6,7 @@ export interface ExchangeAdapter {
   getOrderbook(symbol: string): Promise<{ bids: orderbookSide; asks: orderbookSide }>;
   marketBuy(symbol: string, size: number): any;
   marketSell(symbol: string, size: number): any;
-  getFees(symbol?: string): Promise<{ taker: number }>;
+  getFees(symbol?: string): Promise<{ taker: number, maker:number }>;
   getBalance(asset: string): Promise<number>;
   minOrderSize(symbol: string): number;
 }

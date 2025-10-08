@@ -2,11 +2,7 @@ import axios, { AxiosInstance } from "axios";
 import crypto from "crypto";
 import WebSocket from "ws";
 import { exchangeQuoteSymbol, Orderbook } from "./binance.types";
-import {
-  Spot,
-  SpotRestAPI,
-  SPOT_REST_API_TESTNET_URL,
-} from "@binance/spot";
+import { Spot, SpotRestAPI, SPOT_REST_API_TESTNET_URL } from "@binance/spot";
 
 const {
   BINANCE_API_KEY,
@@ -45,7 +41,6 @@ class BinanceService {
         basePath: SPOT_REST_API_TESTNET_URL,
       },
     });
-
   }
 
   /** ============ REST ORDER METHODS ============ **/
@@ -53,8 +48,11 @@ class BinanceService {
     return crypto.createHmac("sha256", this.secret).update(query).digest("hex");
   }
 
-  private buildQuery(params: Record<string, any>) {
-    params.timestamp = Date.now();
+  private async buildQuery(params: Record<string, any>) {
+    const serverTime = await axios.get(
+      "https://testnet.binance.vision/api/v3/time"
+    );
+    params.timestamp = serverTime.data.serverTime;
     const kv = Object.keys(params)
       .filter((k) => params[k] !== undefined && params[k] !== null)
       .map((k) => `${k}=${encodeURIComponent(params[k])}`)
@@ -130,6 +128,7 @@ class BinanceService {
           Number(qty),
         ]),
       };
+      //console.log("orderbook binance------------->", orderbook);
       this.orderbooks[symbol.toLowerCase()] = orderbook;
       return orderbook;
     } catch (err) {

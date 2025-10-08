@@ -21,7 +21,7 @@ export class BingXAdapter extends ExchangeAdapter {
 
   async getFees(symbol: string) {
     // return Bingx trading fees
-    return { taker: 0.001, maker: 0.0005 };
+    return { taker: 0.001, maker: 0.001 }; //maker: contributing liquidity to the orderbooks, taker: extracting liquidity to the orderbooks
   }
 
   async getBalance(asset: string): Promise<number> {

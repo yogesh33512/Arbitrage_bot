@@ -22,7 +22,7 @@ export class BinanceAdapter extends ExchangeAdapter {
 
   async getFees(symbol: string) {
     // return Binance trading fees
-    return { taker: 0.001, maker: 0.0005 };
+    return { taker: 0.001, maker: 0.001 }; // it is on discount 0.00075
   }
 
   async getBalance(asset: string): Promise<number> {

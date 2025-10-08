@@ -23,6 +23,7 @@ class BYbitService {
   }
 
   async marketBuy(symbol: string, quantity: string) {
+    console.log('market buy bybit----------------->')
     try {
       const response = await this.client.submitOrder({
         category: "spot",
@@ -91,7 +92,7 @@ class BYbitService {
         symbol,
         limit: depth,
       });
-
+      
       const bids = response.result.b.map(
         ([price, qty]: [string, string]) =>
           [Number(price), Number(qty)] as [number, number]
@@ -102,7 +103,8 @@ class BYbitService {
         ([price, qty]: [string, string]) =>
           [Number(price), Number(qty)] as [number, number]
       );
-
+      //console.log('bybit asks:---------->', bids);
+      //console.log('bybit asks----------->', asks);
       return { bids, asks };
     } catch (error) {
       console.error("Error fetching order book:", error);
