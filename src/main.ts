@@ -15,8 +15,8 @@ import { exchangeQuoteSymbol } from "./exchanges/binance/binance.types";
 import { bingXQuoteSymbol } from "./exchanges/bingx/bingx.types";
 import { arbitration } from "./arbitrage/arbitrage.service";
 import { ExchangeAdapter } from "./arbitrage/arbitrage.types";
-import { BinanceAdapter } from "./adapters/binanceAdapter";
-import { BingXAdapter } from "./adapters/bingXAdapter";
+import { TriangularArbitrage } from "./arbitrage/triangularArbitrage";
+import { BybitAdapter,MexcAdapter,BinanceAdapter, BingXAdapter} from "./adapters";
 
 const app = express();
 const logger = new LoggerService();
@@ -37,14 +37,40 @@ ErrorHandler.handleUncaughtExceptions();
 ErrorHandler.handleUnhandledRejections();
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, async() => {
+  
+  
+
+  //Triangular arbitrarge
+
+  
+  async function triangular() {
+    const triangularArbitrarge = new TriangularArbitrage();
+    //triangularArbitrarge.findOpportunity(new BingXAdapter(), new BinanceAdapter() , new MexcAdapter());
+    await triangularArbitrarge.findOpportunity()
+  }
+  triangular();
+
+
+
+
+
+
+
+/*
+// Below is arbitrarge for a symbol across different exchanges
+
+
+
+  
   const symbol = "SOLUSDT";
   const size = 0.5;
 
   const exchanges: ExchangeAdapter[] = [
     new BingXAdapter(),
     new BinanceAdapter(),
-
+    new MexcAdapter(),
+    new BybitAdapter()
     // add more exchange adapters here
   ];
 
@@ -75,7 +101,7 @@ app.listen(PORT, () => {
         console.log(
           `[Main] Executing opportunity: Buy ${arb.size} ${arb.symbol} on ${arb.buyExchange.name}, Sell on ${arb.sellExchange.name}`
         );
-        await arbitration.arbitrargeExecution(arb);
+        //await arbitration.arbitrargeExecution(arb);
         console.log("[Main] Opportunity execution completed\n");
       }
     } catch (err) {
@@ -84,6 +110,14 @@ app.listen(PORT, () => {
 
     console.log("[Main] ----- Scan cycle complete -----");
   }, 2000);
+
+*/
+
+
+
+
+
+
 
   /*
   //Binance
@@ -124,7 +158,7 @@ app.listen(PORT, () => {
     });
 
   
-  mexcService.marketSell('SOLUSDT',"1").then((response)=>{
+  mexcService.marketSell('SOLUSDT',"1","").then((response)=>{
     console.log('MEXC market sell response: ',response)
   }).catch((err)=>{
     console.log('MEXC market sell error: ',JSON.parse(err.body.toString()))

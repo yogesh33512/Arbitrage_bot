@@ -3,6 +3,7 @@ import { Spot } from "mexc-api-sdk";
 import { exchangeQuoteSymbol } from "./mexc.types";
 import crypto from "crypto";
 import axios from "axios";
+import { Orderbook } from "../binance/binance.types";
 
 class MEXCServices {
   private socket!: WebSocket;
@@ -12,6 +13,7 @@ class MEXCServices {
   private apiKey: string;
   private apiSecret: string;
   private wsDS: WebSocket | null = null;
+  private orderbooks: Record<string, Orderbook> = {};
 
   constructor() {
     //this.init();
@@ -42,10 +44,9 @@ class MEXCServices {
         "MARKET",
         options
       );
-
       return response;
     } catch (error) {
-      throw error;
+      console.log(`Error occured while mexc market buy: `, error)
     }
   }
 
@@ -73,7 +74,7 @@ class MEXCServices {
       );
       return response;
     } catch (error) {
-      throw error;
+      console.log(`Error occured while mexc market sell: `, error);
     }
   }
 
@@ -92,11 +93,33 @@ class MEXCServices {
     return tickers;
   }
 
+  async getOrderBooks(symbol: string, limit = 5) {
+    try {
+      const res = await this.client.depth(symbol, limit);
+      const orderbook: Orderbook = {
+        bids: res.bids.map(([price, qty]: [string, string]) =>
+          [Number(price), Number(qty)].slice(0, 5)
+        ),
+        asks: res.asks.map(([price, qty]: [string, string]) =>
+          [Number(price), Number(qty)].slice(0, 5)
+        ),
+      };
+      this.orderbooks[symbol.toLowerCase()] = orderbook;
+      //console.log('mexc bids------>', orderbook.bids.slice(0,5));
+      //console.log('mexc asks------>', orderbook.asks.slice(0,5));
+      return orderbook;
+    } catch (error) {
+      console.log(`Error occured while fetching mexc order books: `, error);
+      return { bids: [], asks: [] };
+    }
+  }
+
   /** ============ WEBSOCKET METHODS ============ **/
 
   async connectUserDataStream() {
     try {
-      const listenKey = "430229392a0d0a278899c06117d939befaf3722b93cef0fa5f1dc94160eea1ac";
+      const listenKey =
+        "430229392a0d0a278899c06117d939befaf3722b93cef0fa5f1dc94160eea1ac";
 
       this.wsDS = new WebSocket(`wss://wbs.mexc.com/ws?listenKey=${listenKey}`);
       this.wsDS.on("open", () => console.log("✅ User WS connected"));
@@ -167,8 +190,8 @@ class MEXCServices {
       const subscribeMsg = {
         method: "SUBSCRIPTION",
         //params: [`spot@public.deals.v3.api@${sym}`],
-        params:[`spot@public.bookTicker.v3.api@${sym}`],
-        id:1
+        params: [`spot@public.bookTicker.v3.api@${sym}`],
+        id: 1,
       };
       this.socket.send(JSON.stringify(subscribeMsg));
       console.log(`📡 Subscribed to ${sym}`);
@@ -178,7 +201,7 @@ class MEXCServices {
   private onMessage(message: any): void {
     try {
       const msg = JSON.parse(message.toString());
-      console.log('msg mexc--------------->',msg);
+      console.log("msg mexc--------------->", msg);
       if (msg?.d && msg?.s) {
         // d = trades array, s = symbol
         const trades = msg.d;

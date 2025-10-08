@@ -92,8 +92,7 @@ class BingXServices {
   }
 
   async marketBuy(symbol: string, quantity: number) {
-    const newSymbol = this.formatSymbol(symbol);
-
+    const newSymbol = await this.formatSymbol(symbol);
     const api: APIRequest = {
       uri: "/openApi/spot/v1/trade/order",
       method: "POST",
@@ -113,7 +112,7 @@ class BingXServices {
   }
 
   async marketSell(symbol: string, quantity: number) {
-    const newSymbol = this.formatSymbol(symbol);
+    const newSymbol = await this.formatSymbol(symbol);
 
     const api: APIRequest = {
       uri: "/openApi/spot/v1/trade/order",
@@ -163,26 +162,35 @@ class BingXServices {
   async getOrderbook(symbol: string) {
     const newSymbol = await this.formatSymbol(symbol);
     const api: APIRequest = {
-      uri: "/openApi/swap/v2/quote/depth",
+      uri: "/openApi/spot/v1/market/depth",
       method: "GET",
       payload: {
         symbol: newSymbol,
         limit: "5",
+        type:'step5'
       },
       protocol: "https",
     };
-    const response = await this.sendRequest(api);
-    const orderbook = {
-      bids: response.data.bids.map(([price, qty]: [string, string]) => [
-        Number(price),
-        Number(qty),
-      ]),
-      asks: response.data.asks.map(([price, qty]: [string, string]) => [
-        Number(price),
-        Number(qty),
-      ]),
-    };
-    return orderbook;
+    try {
+      const response = await this.sendRequest(api);
+      const orderbook = {
+        bids: response.data.bids.map(([price, qty]: [string, string]) => [
+          Number(price),
+          Number(qty),
+        ]),
+        asks: response.data.asks.map(([price, qty]: [string, string]) => [
+          Number(price),
+          Number(qty),
+        ]),
+      };
+      //console.log("bingx bids--------------->",orderbook.bids)
+      //console.log("bingx asks--------------->",orderbook.asks)
+
+      return orderbook;
+    } catch (error) {
+      console.log(`Error while fetching bingx: `, error);
+      return { bids: [], asks: [] };
+    }
   }
 
   async formatSymbol(symbol: string) {

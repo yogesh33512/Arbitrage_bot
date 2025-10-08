@@ -1,19 +1,20 @@
+import chalk from "chalk";
 import { orderbookSide } from "./ordrbooks.types";
 
 class Orderbooks {
   constructor() {
-    console.log("[Orderbooks] Initialized Orderbooks instance");
+    console.log(chalk.whiteBright("[Orderbooks] Initialized Orderbooks instance"));
   }
 
   async avgPriceFromBook(bookSide: orderbookSide, size: number) {
-    console.log(`[avgPriceFromBook] Calculating avg price for size: ${size}`);
+    console.log(chalk.whiteBright(`[avgPriceFromBook] Calculating avg price for size: ${chalk.yellowBright(size)}`));
     let remaining = size; // how much of the order is still left to fill
     let cost = 0; // total cost (price*amount) so far
     let consumed = 0; // how much of the requested size is filled so far
 
     for (const [price, levelSize] of bookSide) {
       if (remaining <= 0) {
-        console.log("[avgPriceFromBook] Order fully consumed, stopping iteration");
+        console.log(chalk.whiteBright("[avgPriceFromBook] Order fully consumed, stopping iteration"));
         break;
       }
 
@@ -22,20 +23,20 @@ class Orderbooks {
       consumed += take; // add to filled amount
       remaining -= take; // reduce remaining amount to fill
 
-      console.log(
-        `[avgPriceFromBook] Taking ${take} @ ${price}, total consumed: ${consumed}, remaining: ${remaining}`
-      );
+      console.log(chalk.whiteBright(
+        `[avgPriceFromBook] Taking ${chalk.yellowBright(take)} @ ${chalk.yellowBright(price)}, total consumed: ${chalk.yellowBright(consumed)}, remaining: ${chalk.yellowBright(remaining)}`
+      ));
     }
 
     if (consumed < size) {
-      console.warn(
+      console.warn(chalk.bgRed.white.bold(
         `[avgPriceFromBook] ⚠ Insufficient liquidity. Requested: ${size}, Filled: ${consumed}`
-      );
+      ));
       return { avgPrice: Number.POSITIVE_INFINITY, consumed }; // insufficient liquidity
     }
 
     const avgPrice = cost / size;
-    console.log(`[avgPriceFromBook] ✅ Avg price calculated: ${avgPrice}, Total consumed: ${consumed}`);
+    console.log(chalk.whiteBright(`[avgPriceFromBook]  Avg price calculated: ${chalk.yellowBright(avgPrice.toFixed(8))}, Total consumed: ${chalk.yellowBright(consumed)}`));
     return { avgPrice, consumed };
   }
 
@@ -46,9 +47,9 @@ class Orderbooks {
     buyFee: number, // fraction fee on buy
     sellFee: number // fraction fee on sell
   ) {
-    console.log(
-      `[calculateProfit] Calculating profit | Buy: ${buyPrice}, Sell: ${sellPrice}, Size: ${size}, BuyFee: ${buyFee}, SellFee: ${sellFee}`
-    );
+    console.log(chalk.whiteBright(
+      `[calculateProfit]💰 Calculating profit | Buy: ${chalk.yellowBright(buyPrice)}, Sell: ${chalk.yellowBright(sellPrice)}, Size: ${chalk.yellowBright(size)}, BuyFee: ${chalk.yellowBright(buyFee)}, SellFee: ${chalk.yellowBright(sellFee)}`
+    ));
 
     const cost = buyPrice * size;
     const costWithFee = cost + cost * buyFee;
@@ -57,10 +58,13 @@ class Orderbooks {
     const netProfit = proceedsAfterFee - costWithFee;
     const roi = netProfit / costWithFee;
 
+    const profitIcon = netProfit >= 0 ? "✅" : "❌";
+    const color = netProfit >= 0 ? chalk.greenBright.bold : chalk.redBright;
+
     console.log(
-      `[calculateProfit] ✅ NetProfit: ${netProfit}, ROI: ${(roi * 100).toFixed(
+     color( `[calculateProfit] ${profitIcon} NetProfit: ${netProfit}, ROI: ${(roi * 100).toFixed(+
         2
-      )}%, CostWithFee: ${costWithFee}, ProceedsAfterFee: ${proceedsAfterFee}`
+      )}%, CostWithFee: ${costWithFee}, ProceedsAfterFee: ${proceedsAfterFee}`)
     );
 
     return { netProfit, roi, cost: costWithFee, proceeds: proceedsAfterFee };

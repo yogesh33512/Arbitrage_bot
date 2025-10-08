@@ -23,6 +23,7 @@ class BYbitService {
   }
 
   async marketBuy(symbol: string, quantity: string) {
+    console.log('market buy bybit----------------->')
     try {
       const response = await this.client.submitOrder({
         category: "spot",
@@ -80,22 +81,34 @@ class BYbitService {
     return response;
   }
 
-  async getOrderBook(symbol: string = "ETHUSDT", depth = 5) {
+  async getOrderBook(
+    symbol: string,
+    depth = 5
+  ): Promise<{ bids: [number, number][]; asks: [number, number][] }> {
     try {
+
       const response = await this.client.getOrderbook({
-        category:'spot',
+        category: "spot",
         symbol,
-        limit:depth
-      })
+        limit: depth,
+      });
+      
+      const bids = response.result.b.map(
+        ([price, qty]: [string, string]) =>
+          [Number(price), Number(qty)] as [number, number]
+      );
 
-      const orderbook = {
-        bids:response.result.b.map(([price,qty])=>[Number(price), Number(qty)]),
-        asks:response.result.a.map(([price,qty])=>[Number(price), Number(qty)]),
-      }
 
-      return orderbook;
+      const asks = response.result.a.map(
+        ([price, qty]: [string, string]) =>
+          [Number(price), Number(qty)] as [number, number]
+      );
+      //console.log('bybit asks:---------->', bids);
+      //console.log('bybit asks----------->', asks);
+      return { bids, asks };
     } catch (error) {
       console.error("Error fetching order book:", error);
+      return { bids: [], asks: [] };
     }
   }
 
